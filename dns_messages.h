@@ -26,6 +26,7 @@ typedef struct Dns_msg_header{
     uint8_t aa :1;
     uint8_t opcode :4;
     uint8_t qr :1;
+
     uint8_t rcode :4;
     uint8_t cd :1;
     uint8_t ad :1;
@@ -246,6 +247,7 @@ void dns_create_answer(const unsigned char *dns_msg, const Resource_record *rr, 
 
         asr->rdata = (unsigned char*) dns_str_to_qname(rr->location);
 
+        // Plus 1 to account for zero at end of string
         asr->rdata_len = sizeof(char) * (strlen( (char*) asr->rdata) + 1);
     }
     else{
@@ -271,18 +273,87 @@ void dns_print_answer(const Dns_answer *asr){
     printf("\n");
 }
 
-void dns_insert_answer(const Dns_answer *asr, unsigned char *dns_msg){
+size_t dns_get_msg_size(unsigned char *dns_msg){
+    
+    //From the beginning of qname add the length of it 
+    //+ zero at end of str + type and class + 11 bytes for the 'Additional Records' section.
+    unsigned char *end_of_message = &dns_msg[12] + strlen((char*) &dns_msg[12]) 
+        + 1 + sizeof(uint32_t) + (sizeof(uint8_t) * 11);
 
+    size_t size = end_of_message - dns_msg;
 
+    return size;
+}
+
+void dns_insert_answer(const Dns_answer *asr, unsigned char *dns_msg, size_t *msg_size){
+    
+    //Aditional records section is 11 char's at the end of the message
+    const uint8_t AR_DATA_SIZE = 11;
+
+    uint8_t *msg_ptr = &dns_msg[*msg_size - AR_DATA_SIZE];
+  
+    /*
+    //Backup ar data
+    uint8_t ar_data[AR_DATA_SIZE];
+
+    memcpy(msg_ptr, ar_data, AR_DATA_SIZE);
+    */
+
+    //Copy id
+    uint16_t u16_temp = htons(asr->id);
+
+    memcpy(msg_ptr, &u16_temp, sizeof(asr->id) );
+
+    msg_ptr = msg_ptr + sizeof(asr->id);
+    
+    //Copy type 
+    u16_temp = htons(asr->atype);
+
+    memcpy(msg_ptr, &u16_temp, sizeof(asr->atype) );
+
+    msg_ptr = msg_ptr + sizeof(asr->atype);
+
+    //Copy class
+    u16_temp = htons(asr->aclass);
+
+    memcpy(msg_ptr, &u16_temp, sizeof(asr->aclass) );
+
+    msg_ptr = msg_ptr + sizeof(asr->aclass);
+
+    //Copy ttl
+    uint32_t u32_temp = htonl(asr->ttl);
+
+    memcpy(msg_ptr, &u32_temp, sizeof(asr->ttl) );
+
+    msg_ptr = msg_ptr + sizeof(asr->ttl);
+
+    //Copy rdata length
+    u16_temp = htons(asr->rdata_len);
+
+    memcpy(msg_ptr, &u16_temp, sizeof(asr->rdata_len) );
+
+    msg_ptr = msg_ptr + sizeof(asr->rdata_len);
+
+    //Copy rdata
+    memcpy(msg_ptr, asr->rdata, asr->rdata_len);
+
+    msg_ptr = msg_ptr + asr->rdata_len;
+
+    //Get new message size
+    *msg_size = msg_ptr - dns_msg;
 }
 
 void dns_delete_question(Dns_msg_question *dns_qstn){
 
+    free(dns_qstn->qname);
 
+    free(dns_qstn);
 }
 
 void dns_delete_answer(Dns_answer *dns_asr){
 
+    free(dns_asr->rdata);
 
+    free(dns_asr);
 }
 

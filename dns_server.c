@@ -80,11 +80,24 @@ int main(int argc, char** argv){
 
         printf("Message Received\n");
         
+        //Change dns_msg to response
+        Dns_msg_header *dns_header = (Dns_msg_header*) dns_msg; 
+
+        dns_header->qr = 1;
+
+        dns_header->rd = 1;
+
+        dns_header->ra = 1;
+
+        dns_header->an_count = htons(1);
+
+        dns_header->ar_count = 0;
+
         //WORK BELOW HERE
         char fn[] = "dns-master.txt";
         Resource_record *root = (Resource_record*) malloc( sizeof(Resource_record) );        
         file_to_list(fn, root);
-        char search_name[] = "host11.student.test";
+        char search_name[] = "host1.student.test";
         Resource_record *rr = search_record_names(root, search_name);
 
         Dns_msg_question *qstn = (Dns_msg_question*) malloc( sizeof(Dns_msg_question) );
@@ -93,14 +106,28 @@ int main(int argc, char** argv){
         
         Dns_answer *asr = (Dns_answer*) malloc( sizeof(Dns_answer) );
         dns_create_answer(dns_msg, rr, qstn, asr);
-        dns_print_answer(asr);
+
+        size_t msg_size = dns_get_msg_size(dns_msg);
+
+        dns_insert_answer(asr, dns_msg, &msg_size); 
         
+        msg_rc = sendto(sockfd, dns_msg, msg_size, 0, (struct sockaddr *) &client, client_len);
+
+        if(msg_rc == -1){
+            
+            printf("ERROR sending message\n");
+
+            return -1;
+        }
 
 
 
+        //Clean up
+        dns_delete_question(qstn);
 
+        dns_delete_answer(asr);
 
-
+        printf("Clean up complete\n");
 
 
     }// END while
