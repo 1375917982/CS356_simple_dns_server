@@ -273,7 +273,7 @@ void dns_print_answer(const Dns_answer *asr){
     printf("\n");
 }
 
-size_t dns_get_msg_size(unsigned char *dns_msg){
+size_t dns_get_request_msg_size(unsigned char *dns_msg){
     
     //From the beginning of qname add the length of it 
     //+ zero at end of str + type and class + 11 bytes for the 'Additional Records' section.
@@ -346,14 +346,10 @@ void dns_insert_answer(const Dns_answer *asr, unsigned char *dns_msg, size_t *ms
 void dns_delete_question(Dns_msg_question *dns_qstn){
 
     free(dns_qstn->qname);
-
-    free(dns_qstn);
 }
 
 void dns_delete_answer(Dns_answer *dns_asr){
 
     free(dns_asr->rdata);
-
-    free(dns_asr);
 }
 

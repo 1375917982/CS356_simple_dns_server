@@ -195,7 +195,9 @@ void file_to_list(char *filename, Resource_record *head){
 
     }
 
-    //Close file
+    //Clean up
+    free(buffer);
+
     fclose(fp);
 }
 
