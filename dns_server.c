@@ -101,14 +101,18 @@ int main(int argc, char** argv){
         dns_extract_question(dns_msg, &qstn);
 
         //Search for question in list
-        char qname[255];
+        char qname[255]; 
 
         dns_qname_to_str(&qstn, qname);
+
+        printf("searching for: %s\n", qname);
 
         Resource_record *rr = search_record_names(root, qname);
 
         //Record not found
         if(rr == NULL){
+
+            printf("Record not found\n");
             
             msg_header->qr = 1;
 

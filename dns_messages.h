@@ -207,13 +207,15 @@ void dns_extract_question(const unsigned char *dns_msg, Dns_msg_question *dns_qs
     //Grab qname
     const size_t qname_loc = 12;
 
-    dns_qstn->qname_len = strlen( (char*) &dns_msg[qname_loc]);
+    dns_qstn->qname_len = strlen( (char*) &dns_msg[qname_loc]) + 1;
 
     dns_qstn->qname = (unsigned char*) malloc( dns_qstn->qname_len * sizeof(char) );
 
     assert(dns_qstn->qname != NULL);
     
     memcpy(dns_qstn->qname, &dns_msg[qname_loc], dns_qstn->qname_len);
+
+    printf("qname: %s\n", dns_qstn->qname);
 
     //Insert type. All questions are going to be 'A' 
     dns_qstn->qtype = 1;
