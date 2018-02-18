@@ -143,7 +143,7 @@ int main(int argc, char** argv){
 
             dns_delete_answer(&asr);
 
-            while(strcmp(rr->type, "A") != 0){ //CHECK BACK
+            while(strcmp(rr->type, "A") != 0){
             
                 rr = search_record_names(root, rr->location);
 
@@ -174,8 +174,7 @@ int main(int argc, char** argv){
             //Create Authority Section
             size_t auth_record_count = 0;
 
-            //rr = get_next_auth_record(root);
-            rr = NULL;
+            rr = get_next_auth_record(root);
 
             while(rr != NULL){
                 
@@ -201,8 +200,7 @@ int main(int argc, char** argv){
             //Create Additional Section
             size_t ad_record_count = 0;
             
-            //rr = get_next_auth_record(root);
-            rr = NULL;
+            rr = get_next_auth_record(root);
 
             while(rr != NULL){
                 
@@ -210,7 +208,7 @@ int main(int argc, char** argv){
 
                 Resource_record *ad_rr = search_record_names(root, rr->location);
 
-                qstn.qname = (unsigned char*) ad_rr->name;
+                qstn.qname = (unsigned char*) dns_str_to_qname( rr->name );
 
                 qstn.qname_len = strlen( (char*) ad_rr->name );
 

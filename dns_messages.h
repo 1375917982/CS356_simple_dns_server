@@ -231,8 +231,6 @@ void dns_extract_question(const unsigned char *dns_msg, Dns_msg_question *dns_qs
     
     memcpy(dns_qstn->qname, &dns_msg[qname_loc], dns_qstn->qname_len);
 
-    printf("qname: %s\n", dns_qstn->qname);
-
     //Insert type. All questions are going to be 'A' 
     dns_qstn->qtype = 1;
 
@@ -306,18 +304,8 @@ size_t dns_get_request_msg_size(unsigned char *dns_msg){
 
 void dns_insert_answer(const Dns_answer *asr, unsigned char *dns_msg, size_t *msg_size){
     
-    //Aditional records section is 11 char's at the end of the message
-    const uint8_t AR_DATA_SIZE = 11;
-
     uint8_t *msg_ptr = &dns_msg[*msg_size];
   
-    /*
-    //Backup ar data
-    uint8_t ar_data[AR_DATA_SIZE];
-
-    memcpy(msg_ptr, ar_data, AR_DATA_SIZE);
-    */
-
     //Copy id
     uint16_t u16_temp = htons(asr->id);
 
