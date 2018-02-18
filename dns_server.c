@@ -122,15 +122,15 @@ int main(int argc, char** argv){
         }
         else{
             
-            //Create answer
+            //Create answer section
+            size_t ans_record_count = 1;
+
             Dns_answer asr;
 
             dns_create_answer(dns_msg, rr, &qstn, &asr);
 
-            //Insert Answer
             dns_insert_answer(&asr, dns_msg, &msg_size);
 
-            //Set msg header
             msg_header->ra = 1;
             
             msg_header->rd = 1;
@@ -139,12 +139,91 @@ int main(int argc, char** argv){
 
             msg_header->aa = 1;
 
-            msg_header->ar_count = htons(0);
-
-            msg_header->an_count = htons(1);
-
-            //Delete answer
             dns_delete_answer(&asr);
+
+            while(strcmp(rr->type, "A") == 110){ //CHECK BACK
+            
+                rr = search_record_names(root, rr->location);
+
+                printf("next record: %s\n", rr->name);
+
+                if(rr == NULL){
+                    
+                    break;
+                }
+
+                qstn.qname = (unsigned char*) rr->name;
+
+                qstn.qname_len = strlen( (char*) rr->name );
+
+                qstn.qtype = dns_type_char_to_uint16(rr->type); 
+                
+                dns_create_answer(dns_msg, rr, &qstn, &asr);
+
+                dns_insert_answer(&asr, dns_msg, &msg_size);
+
+                dns_delete_answer(&asr);
+
+                ans_record_count += 1;
+            }
+
+            msg_header->an_count = htons(ans_record_count);
+
+            //Create Authority Section
+            size_t auth_record_count = 0;
+
+            //rr = get_next_auth_record(root);
+            rr = NULL;
+
+            while(rr != NULL){
+                
+                auth_record_count += 1;
+
+                qstn.qname = (unsigned char*) rr->name;
+
+                qstn.qname_len = strlen( (char*) rr->name );
+
+                qstn.qtype = dns_type_char_to_uint16(rr->type); // type 'NS'
+                
+                dns_create_answer(dns_msg, rr, &qstn, &asr);
+
+                dns_insert_answer(&asr, dns_msg, &msg_size);
+
+                dns_delete_answer(&asr);
+
+                rr = get_next_auth_record(rr->next);
+            }
+
+            msg_header->ns_count = htons(auth_record_count);
+
+            //Create Additional Section
+            size_t ad_record_count = 0;
+            
+            //rr = get_next_auth_record(root);
+            rr = NULL;
+
+            while(rr != NULL){
+                
+                ad_record_count += 1;
+
+                Resource_record *ad_rr = search_record_names(root, rr->location);
+
+                qstn.qname = (unsigned char*) ad_rr->name;
+
+                qstn.qname_len = strlen( (char*) ad_rr->name );
+
+                qstn.qtype = dns_type_char_to_uint16(ad_rr->type); // type 'NS'
+                
+                dns_create_answer(dns_msg, ad_rr, &qstn, &asr);
+
+                dns_insert_answer(&asr, dns_msg, &msg_size);
+
+                dns_delete_answer(&asr);
+            
+                rr = get_next_auth_record(rr->next);
+            }
+
+            msg_header->ar_count = htons(ad_record_count);
         }
 
         //Send Response  

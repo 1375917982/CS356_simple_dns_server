@@ -82,6 +82,18 @@ uint16_t dns_type_char_to_uint16(char* ch_type){
     return 0;
 }
 
+void print_unsigned_chars_in_hex(unsigned char *str){
+
+    size_t len = strlen( (char*) str);
+
+    for(size_t i=0; i < len; i++){
+
+        printf("%x ", str[i]);
+    }
+
+    printf("\n");
+}
+
 uint16_t dns_generate_name_pointer(const unsigned char *dns_msg, const Dns_msg_question *dns_qstn){
     
     uint8_t first_letter = dns_qstn->qname[1]; //skip char-count number
@@ -137,9 +149,14 @@ char *dns_str_to_qname(const char *str){
     //qname has 1 extra char to represent the first char count
     char *qname = (char*) malloc( sizeof(char) * (strlen(str) + 1) );
     
-    size_t count = 0;
+    //strings end with zero
+    size_t count = -1;
+
+    printf("str: %s\n\n", str);
 
     for( int i=strlen(str); i >= 0; i--){
+
+        printf("%x ", str[i]);
 
         if(str[i] == '.'){
             
@@ -154,6 +171,8 @@ char *dns_str_to_qname(const char *str){
             count += 1;
         }
     }
+
+    printf("\n");
 
     qname[0] = count;
 
@@ -184,6 +203,7 @@ void dns_qname_to_str(const Dns_msg_question *dns_qstn, char *qname){
         index += 1;
     }
 }
+
 
 void dns_print_msg_header(const Dns_msg_header *dns_header){
     
@@ -251,6 +271,7 @@ void dns_create_answer(const unsigned char *dns_msg, const Resource_record *rr, 
 
         // Plus 1 to account for zero at end of string
         asr->rdata_len = sizeof(char) * (strlen( (char*) asr->rdata) + 1);
+
     }
     else{
         printf("Invalid Answer Type\n");

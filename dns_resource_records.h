@@ -85,6 +85,24 @@ Resource_record *search_record_names(Resource_record *head, char *find_name){
     return NULL;
 }
 
+Resource_record *get_next_auth_record(Resource_record *head){
+    const char* TYPE_NS = "NS";
+
+    while(head != NULL){
+    
+        if(head->name && strcmp(head->type, TYPE_NS) == 0){
+            
+            return head;
+        }
+        else{
+
+            head = head->next;
+        }
+    }
+    
+    return NULL;
+}
+
 void file_to_list(char *filename, Resource_record *head){
     
     //Open the file for reading
