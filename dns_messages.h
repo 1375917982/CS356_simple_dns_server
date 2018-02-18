@@ -102,6 +102,8 @@ uint16_t dns_generate_name_pointer(const unsigned char *dns_msg, const Dns_msg_q
 
     uint16_t index = 0;
 
+    printf("dns_qstn->qname: %s\n", dns_qstn->qname);
+
     //Find index of qname in dns message
     for(size_t i=0; i < msg_length; i++){        
 
@@ -152,11 +154,7 @@ char *dns_str_to_qname(const char *str){
     //strings end with zero
     size_t count = -1;
 
-    printf("str: %s\n\n", str);
-
     for( int i=strlen(str); i >= 0; i--){
-
-        printf("%x ", str[i]);
 
         if(str[i] == '.'){
             
@@ -171,8 +169,6 @@ char *dns_str_to_qname(const char *str){
             count += 1;
         }
     }
-
-    printf("\n");
 
     qname[0] = count;
 
@@ -313,7 +309,7 @@ void dns_insert_answer(const Dns_answer *asr, unsigned char *dns_msg, size_t *ms
     //Aditional records section is 11 char's at the end of the message
     const uint8_t AR_DATA_SIZE = 11;
 
-    uint8_t *msg_ptr = &dns_msg[*msg_size - AR_DATA_SIZE];
+    uint8_t *msg_ptr = &dns_msg[*msg_size];
   
     /*
     //Backup ar data

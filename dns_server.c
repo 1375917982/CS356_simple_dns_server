@@ -90,8 +90,10 @@ int main(int argc, char** argv){
         //Get request header
         Dns_msg_header *msg_header = (Dns_msg_header*) dns_msg;
 
-        //Get msg size
+        //Get msg size and remove ar
         size_t msg_size = dns_get_request_msg_size(dns_msg);
+
+        msg_size -= 11;
 
         printf("Message Received\n");
         
@@ -141,18 +143,16 @@ int main(int argc, char** argv){
 
             dns_delete_answer(&asr);
 
-            while(strcmp(rr->type, "A") == 110){ //CHECK BACK
+            while(strcmp(rr->type, "A") != 0){ //CHECK BACK
             
                 rr = search_record_names(root, rr->location);
-
-                printf("next record: %s\n", rr->name);
 
                 if(rr == NULL){
                     
                     break;
                 }
 
-                qstn.qname = (unsigned char*) rr->name;
+                qstn.qname = (unsigned char*) dns_str_to_qname( rr->name );
 
                 qstn.qname_len = strlen( (char*) rr->name );
 
@@ -161,6 +161,8 @@ int main(int argc, char** argv){
                 dns_create_answer(dns_msg, rr, &qstn, &asr);
 
                 dns_insert_answer(&asr, dns_msg, &msg_size);
+
+                printf("name from asr: %s\n", (char*) asr.rdata);
 
                 dns_delete_answer(&asr);
 
@@ -179,7 +181,7 @@ int main(int argc, char** argv){
                 
                 auth_record_count += 1;
 
-                qstn.qname = (unsigned char*) rr->name;
+                qstn.qname = (unsigned char*) dns_str_to_qname( rr->name );
 
                 qstn.qname_len = strlen( (char*) rr->name );
 
