@@ -102,8 +102,6 @@ uint16_t dns_generate_name_pointer(const unsigned char *dns_msg, const Dns_msg_q
 
     uint16_t index = 0;
 
-    printf("dns_qstn->qname: %s\n", dns_qstn->qname);
-
     //Find index of qname in dns message
     for(size_t i=0; i < msg_length; i++){        
 
@@ -125,11 +123,15 @@ uint16_t dns_generate_name_pointer(const unsigned char *dns_msg, const Dns_msg_q
     return index;
 }
 
-void dns_ip_str_to_uint8(char *ip_str, uint8_t *ip_uint8){
+void dns_ip_str_to_uint8(const char *ip_str, uint8_t *ip_uint8){
+
+    char str[255];
+
+    strcpy(str, ip_str);
 
     size_t index = 0;
 
-    char *token =  strtok(ip_str, ".");
+    char *token =  strtok(str, ".");
 
     while( token != NULL ){
 
@@ -254,7 +256,7 @@ void dns_create_answer(const unsigned char *dns_msg, const Resource_record *rr, 
         asr->rdata = (uint8_t *) malloc( 4 );    
 
         assert(asr->rdata != NULL);
-        
+
         dns_ip_str_to_uint8(rr->location, asr->rdata);
 
         asr->rdata_len = 4;

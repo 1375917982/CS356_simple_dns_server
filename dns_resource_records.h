@@ -73,7 +73,7 @@ Resource_record *search_record_names(Resource_record *head, char *find_name){
     while(head != NULL){
 
         if(head->name && strcmp(head->name, find_name) == 0){
-            
+
             return head;
         }
         else{
@@ -86,6 +86,7 @@ Resource_record *search_record_names(Resource_record *head, char *find_name){
 }
 
 Resource_record *get_next_auth_record(Resource_record *head){
+
     const char* TYPE_NS = "NS";
 
     while(head != NULL){

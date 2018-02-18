@@ -107,7 +107,7 @@ int main(int argc, char** argv){
 
         dns_qname_to_str(&qstn, qname);
 
-        printf("searching for: %s\n", qname);
+        printf("Searching for: %s\n", qname);
 
         Resource_record *rr = search_record_names(root, qname);
 
@@ -118,7 +118,9 @@ int main(int argc, char** argv){
             
             msg_header->qr = 1;
 
-            msg_header->ra = 1;
+            msg_header->ra = 0;
+
+            msg_header->ar_count = 0;
 
             msg_header->rcode = 3;
         }
@@ -133,7 +135,7 @@ int main(int argc, char** argv){
 
             dns_insert_answer(&asr, dns_msg, &msg_size);
 
-            msg_header->ra = 1;
+            msg_header->ra = 0;
             
             msg_header->rd = 1;
 
@@ -142,6 +144,8 @@ int main(int argc, char** argv){
             msg_header->aa = 1;
 
             dns_delete_answer(&asr);
+
+            dns_delete_question(&qstn);
 
             while(strcmp(rr->type, "A") != 0){
             
@@ -162,9 +166,9 @@ int main(int argc, char** argv){
 
                 dns_insert_answer(&asr, dns_msg, &msg_size);
 
-                printf("name from asr: %s\n", (char*) asr.rdata);
-
                 dns_delete_answer(&asr);
+
+                dns_delete_question(&qstn);
 
                 ans_record_count += 1;
             }
@@ -192,6 +196,8 @@ int main(int argc, char** argv){
 
                 dns_delete_answer(&asr);
 
+                dns_delete_question(&qstn);
+
                 rr = get_next_auth_record(rr->next);
             }
 
@@ -204,11 +210,9 @@ int main(int argc, char** argv){
 
             while(rr != NULL){
                 
-                ad_record_count += 1;
-
                 Resource_record *ad_rr = search_record_names(root, rr->location);
 
-                qstn.qname = (unsigned char*) dns_str_to_qname( rr->name );
+                qstn.qname = (unsigned char*) dns_str_to_qname( rr->location );
 
                 qstn.qname_len = strlen( (char*) ad_rr->name );
 
@@ -219,6 +223,10 @@ int main(int argc, char** argv){
                 dns_insert_answer(&asr, dns_msg, &msg_size);
 
                 dns_delete_answer(&asr);
+
+                dns_delete_question(&qstn);
+
+                ad_record_count += 1;
             
                 rr = get_next_auth_record(rr->next);
             }
@@ -238,8 +246,6 @@ int main(int argc, char** argv){
 
         //Clean up
         dns_delete_question(&qstn);
-
-        printf("Clean up complete\n");
 
     }// END while
 
